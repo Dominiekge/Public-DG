@@ -327,6 +327,7 @@
         let recognition;
         let isRecording = false;
         let finalTranscript = '';
+        let interimTranscript = '';
 
         // Tags
         let tags = ['spraaknotitie'];
@@ -363,7 +364,7 @@
         function initSpeechRecognition() {
             if ('webkitSpeechRecognition' in window) {
                 recognition = new webkitSpeechRecognition();
-                recognition.continuous = true;
+                recognition.continuous = false;
                 recognition.interimResults = true;
                 recognition.lang = 'nl-NL';
 
@@ -384,27 +385,29 @@
                 };
 
                 recognition.onresult = function(event) {
-                    let interimTranscript = '';
-                    let finalTranscript = '';
+                    let currentInterim = '';
+                    let currentFinal = '';
 
                     for (let i = event.resultIndex; i < event.results.length; i++) {
                         const transcript = event.results[i][0].transcript;
                         if (event.results[i].isFinal) {
-                            finalTranscript += transcript + ' ';
+                            currentFinal += transcript;
                         } else {
-                            interimTranscript += transcript;
+                            currentInterim += transcript;
                         }
                     }
 
-                    // Voeg finale transcript toe aan content
-                    if (finalTranscript) {
-                        content.value += finalTranscript;
-                        showStatus('Tekst toegevoegd', 'success');
-                    }
+                    // Sla interim op voor later gebruik
+                    interimTranscript = currentInterim;
 
-                    // Laat interim resultaten zien (optioneel)
-                    if (interimTranscript) {
-                        console.log('Interim:', interimTranscript);
+                    // Alleen finale resultaten toevoegen
+                    if (currentFinal && currentFinal.trim() !== '') {
+                        // Voeg een spatie toe als er al tekst staat en de laatste karakter geen spatie/newline is
+                        if (content.value && !content.value.endsWith(' ') && !content.value.endsWith('\n')) {
+                            content.value += ' ';
+                        }
+                        content.value += currentFinal;
+                        showStatus('Tekst toegevoegd', 'success');
                     }
                 };
 
@@ -426,8 +429,8 @@
             if (isRecording) {
                 recognition.stop();
             } else {
-                // Wis vorige resultaten
-                finalTranscript = '';
+                // Wis vorige interim resultaten
+                interimTranscript = '';
                 recognition.start();
             }
         }
