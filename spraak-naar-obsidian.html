@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spraak naar Obsidian</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #252525;
+            --bg-tertiary: #2d2d2d;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-color: #6c5ce7;
+            --accent-hover: #a29bfe;
+            --success-color: #00b894;
+            --danger-color: #d63031;
+            --border-color: #3a3a3a;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--accent-color);
+            font-size: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #00a080;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #b02a2a;
+        }
+
+        .btn-icon {
+            padding: 0.75rem;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .recording {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+
+        .status {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .status-info {
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+
+        .status-success {
+            background-color: rgba(0, 184, 148, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-error {
+            background-color: rgba(214, 48, 49, 0.2);
+            color: var(--danger-color);
+        }
+
+        .file-info {
+            background-color: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .file-info strong {
+            color: var(--text-primary);
+        }
+
+        .tags-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .tag {
+            background-color: var(--bg-tertiary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
+        .tag-remove:hover {
+            color: #ff6b6b;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Spraak naar Obsidian</h1>
+
+        <div class="file-info">
+            <strong>Bestandsnaam:</strong> <span id="filename">SN </span><span id="date"></span>
+            <br>
+            <strong>Pad:</strong> 006 - Notities/ <span id="full-filename"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="vault-name">Naam van je Obsidian vault:</label>
+            <input type="text" id="vault-name" placeholder="Bijv: MijnNotities">
+        </div>
+
+        <div class="form-group">
+            <label for="title">Titel (optioneel):</label>
+            <input type="text" id="title" placeholder="Extra tekst achter SN [datum]">
+        </div>
+
+        <div class="form-group">
+            <label>Tags:</label>
+            <div class="tags-container" id="tags-container">
+                <span class="tag">
+                    spraaknotitie
+                    <span class="tag-remove" onclick="removeTag('spraaknotitie')">×</span>
+                </span>
+            </div>
+            <input type="text" id="new-tag" placeholder="Voeg een tag toe..." style="margin-top: 0.5rem;">
+        </div>
+
+        <div class="form-group">
+            <label for="content">Inhoud:</label>
+            <textarea id="content" placeholder="Spreek of typ hier je notitie..."></textarea>
+        </div>
+
+        <div class="button-row">
+            <button class="btn-primary" id="record-btn" onclick="toggleRecording()">
+                <span id="record-icon">🎤</span> <span id="record-text">Start opname</span>
+            </button>
+            <button class="btn-secondary" onclick="pasteText()">Plak tekst</button>
+        </div>
+
+        <div class="button-row">
+            <button class="btn-secondary" onclick="copyToClipboard()">
+                📋 Kopieer
+            </button>
+            <button class="btn-secondary" onclick="clearAll()">
+                🗑️ Wis alles
+            </button>
+            <button class="btn-success" onclick="shareToObsidian()">
+                💎 Deel naar Obsidian
+            </button>
+        </div>
+
+        <div class="status" id="status" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Elementen
+        const content = document.getElementById('content');
+        const vaultNameInput = document.getElementById('vault-name');
+        const titleInput = document.getElementById('title');
+        const newTagInput = document.getElementById('new-tag');
+        const tagsContainer = document.getElementById('tags-container');
+        const recordBtn = document.getElementById('record-btn');
+        const recordIcon = document.getElementById('record-icon');
+        const recordText = document.getElementById('record-text');
+        const status = document.getElementById('status');
+        const filenameSpan = document.getElementById('filename');
+        const dateSpan = document.getElementById('date');
+        const fullFilenameSpan = document.getElementById('full-filename');
+
+        // Speech Recognition
+        let recognition;
+        let isRecording = false;
+        let finalTranscript = '';
+
+        // Tags
+        let tags = ['spraaknotitie'];
+
+        // Initialisatie
+        window.onload = function() {
+            // Datum instellen
+            const today = new Date().toISOString().split('T')[0];
+            dateSpan.textContent = today;
+            fullFilenameSpan.textContent = `SN ${today}.md`;
+
+            // Vault naam laden uit localStorage
+            const savedVault = localStorage.getItem('obsidianVaultName');
+            if (savedVault) {
+                vaultNameInput.value = savedVault;
+            }
+
+            // Speech Recognition initialiseren
+            initSpeechRecognition();
+
+            // Tags input handler
+            newTagInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTag(newTagInput.value.trim());
+                    newTagInput.value = '';
+                }
+            });
+
+            // Titel input handler - update filename preview
+            titleInput.addEventListener('input', updateFilenamePreview);
+        };
+
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'nl-NL';
+
+                recognition.onstart = function() {
+                    isRecording = true;
+                    recordIcon.textContent = '🛑';
+                    recordText.textContent = 'Stop opname';
+                    recordBtn.classList.add('recording');
+                    showStatus('Opname gestart...', 'info');
+                };
+
+                recognition.onend = function() {
+                    isRecording = false;
+                    recordIcon.textContent = '🎤';
+                    recordText.textContent = 'Start opname';
+                    recordBtn.classList.remove('recording');
+                    showStatus('Opname gestopt', 'info');
+                };
+
+                recognition.onresult = function(event) {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript + ' ';
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+
+                    // Voeg finale transcript toe aan content
+                    if (finalTranscript) {
+                        content.value += finalTranscript;
+                        showStatus('Tekst toegevoegd', 'success');
+                    }
+
+                    // Laat interim resultaten zien (optioneel)
+                    if (interimTranscript) {
+                        console.log('Interim:', interimTranscript);
+                    }
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    showStatus('Fout: ' + event.error, 'error');
+                    isRecording = false;
+                    recordIcon.textContent = '🎤';
+                    recordText.textContent = 'Start opname';
+                    recordBtn.classList.remove('recording');
+                };
+            } else {
+                showStatus('Speech Recognition niet ondersteund in deze browser. Gebruik Chrome of Edge.', 'error');
+                recordBtn.disabled = true;
+            }
+        }
+
+        function toggleRecording() {
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                // Wis vorige resultaten
+                finalTranscript = '';
+                recognition.start();
+            }
+        }
+
+        function addTag(tag) {
+            if (tag && !tags.includes(tag)) {
+                tags.push(tag);
+                updateTagsDisplay();
+            }
+        }
+
+        function removeTag(tag) {
+            tags = tags.filter(t => t !== tag);
+            updateTagsDisplay();
+        }
+
+        function updateTagsDisplay() {
+            tagsContainer.innerHTML = '';
+            tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.innerHTML = `
+                    ${tag}
+                    <span class="tag-remove" onclick="removeTag('${tag.replace(/'/g, "\\'")}')">×</span>
+                `;
+                tagsContainer.appendChild(tagElement);
+            });
+        }
+
+        function updateFilenamePreview() {
+            const title = titleInput.value.trim();
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (title) {
+                filenameSpan.textContent = `SN ${title} `;
+                fullFilenameSpan.textContent = `SN ${title} ${today}.md`;
+            } else {
+                filenameSpan.textContent = `SN `;
+                fullFilenameSpan.textContent = `SN ${today}.md`;
+            }
+        }
+
+        function copyToClipboard() {
+            const textToCopy = content.value;
+            if (!textToCopy) {
+                showStatus('Niets om te kopiëren', 'error');
+                return;
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showStatus('Tekst gekopieerd naar clipboard!', 'success');
+            }).catch(err => {
+                console.error('Kopiëren mislukt:', err);
+                showStatus('Kopiëren mislukt', 'error');
+            });
+        }
+
+        function clearAll() {
+            if (confirm('Weet je zeker dat je alles wilt wissen?')) {
+                content.value = '';
+                titleInput.value = '';
+                tags = ['spraaknotitie'];
+                updateTagsDisplay();
+                updateFilenamePreview();
+                showStatus('Alles gewist', 'info');
+            }
+        }
+
+        function pasteText() {
+            navigator.clipboard.readText().then(text => {
+                content.value += text + '\n';
+                showStatus('Tekst geplakt!', 'success');
+            }).catch(err => {
+                console.error('Plakken mislukt:', err);
+                showStatus('Plakken mislukt. Geef toestemming om clipboard te lezen.', 'error');
+            });
+        }
+
+        function shareToObsidian() {
+            const vaultName = vaultNameInput.value.trim();
+            const textContent = content.value.trim();
+            const title = titleInput.value.trim();
+            const today = new Date().toISOString().split('T')[0];
+
+            if (!vaultName) {
+                showStatus('Vul eerst de naam van je Obsidian vault in', 'error');
+                return;
+            }
+
+            if (!textContent) {
+                showStatus('Voeg eerst wat inhoud toe', 'error');
+                return;
+            }
+
+            // Sla vault naam op
+            localStorage.setItem('obsidianVaultName', vaultName);
+
+            // Genereer bestandsnaam
+            let filename;
+            if (title) {
+                filename = `SN ${title} ${today}.md`;
+            } else {
+                filename = `SN ${today}.md`;
+            }
+
+            // Maak de Obsidian URI
+            // obsidian://new?file=006%20-%20Notities%2FSN%202026-07-30.md&content=...&vault=VaultNaam
+            const filePath = encodeURIComponent('006 - Notities/' + filename);
+            
+            // Maak de markdown content
+            const tagsYaml = tags.map(t => `  - ${t}`).join('\n');
+            const yamlFrontmatter = `---\ntags:\n${tagsYaml}\n---\n\n`;
+            
+            const fullContent = yamlFrontmatter + textContent;
+            const encodedContent = encodeURIComponent(fullContent);
+            const encodedVault = encodeURIComponent(vaultName);
+
+            const obsidianUri = `obsidian://new?file=${filePath}&content=${encodedContent}&vault=${encodedVault}`;
+
+            // Open Obsidian
+            window.location.href = obsidianUri;
+
+            // Toon status
+            showStatus(`Notitie "${filename}" wordt geopend in Obsidian...`, 'success');
+        }
+
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = 'status status-' + type;
+            status.style.display = 'block';
+            
+            // Verberg na 5 seconden
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+
+        // Toetsenbord shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter om te delen
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                shareToObsidian();
+            }
+            
+            // Ctrl/Cmd + Space om opname te starten/stoppen
+            if ((e.ctrlKey || e.metaKey) && e.key === ' ') {
+                e.preventDefault();
+                toggleRecording();
+            }
+            
+            // Ctrl/Cmd + C om te kopiëren
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                e.preventDefault();
+                copyToClipboard();
+            }
+        });
+    </script>
+</body>
+</html>
